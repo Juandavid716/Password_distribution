@@ -50,20 +50,48 @@ def get_suffix(password_list):
         
         suffix_reverse = suffix[::-1]
         #print("Password is {} and suffix is {}".format(password,suffix))
-        print(password)
         password_without_suffix = password[ 0 : len(password)-len(suffix_reverse)]
         list_baseword.append(password_without_suffix)
         list_suffix.append(suffix_reverse)
     
     return list_suffix, list_baseword;
 
+def shift_pattern(baseword_list):
+    list_shift = []
+    for baseword in baseword_list:
+        shift = []
+        shift_negative = []
+        cont = -1
+        cont_r = -1
+        length = len(baseword)
+        for index in range(0, length):
+           letter = baseword[index]
+           
+           if letter.isupper(): 
+             if index < length // 2:
+                cont += 1
+                shift.append(cont)
+             else:
+                 shift_negative.append(cont_r)
+                 cont_r -= 1
+
+        shift_negative = shift_negative[::-1]
+        shift.extend(shift_negative)
+        list_shift.append(shift)
+
+    return list_shift
+
+        
+
+
 def main():
     list = get_list()
     list_prefix, list_without_prefix = get_prefix(list)
     list_sufix, list_baseword = get_suffix(list_without_prefix)
+    list_shift = shift_pattern(list_baseword)
     print("Lista de prefijos",list_prefix)
     print("Lista de base words",list_baseword)
     print("Lista de sufijos", list_sufix)
-
+    print("Lista de shift pattern", list_shift)
 if __name__ == "__main__":
     main()
