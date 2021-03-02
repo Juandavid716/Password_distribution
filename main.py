@@ -8,7 +8,7 @@ def get_list():
         data.append(line.strip('\n'))
  return data
 
-# Get the prefix for each password and return password without prefix
+# Get the prefix for each password and return two list: List of prefix and list of password without prefix
 def get_prefix(password_list):
     list_prefix = []
     list_password_without_prefix = []
@@ -30,11 +30,37 @@ def get_prefix(password_list):
     
     return list_prefix, list_password_without_prefix;
 
+# Get the suffix for each password and return two list: List of suffix and list of basewords
+def get_suffix(password_list):
+    list_suffix = []
+    list_baseword = []
+    for password in password_list:
+        suffix = ""
+        password_reverse = password[::-1]
+        for letter in password_reverse:
+            if letter.isdigit():
+              suffix = suffix + letter
+            else:
+              break
+
+        if suffix == password_reverse:
+            suffix = ""
         
+        #print("Password is {} and suffix is {}".format(password,suffix))
+
+        password_without_suffix = password.replace(suffix,'')
+        list_baseword.append(password_without_suffix)
+        list_suffix.append(suffix)
+    
+    return list_suffix, list_baseword;
 
 def main():
     list = get_list()
     list_prefix, list_without_prefix = get_prefix(list)
+    list_sufix, list_baseword = get_suffix(list_without_prefix)
+    print("Lista de prefijos",list_prefix)
+    print("Lista de base words",list_baseword)
+    print("Lista de sufijos", list_sufix)
 
 if __name__ == "__main__":
     main()
