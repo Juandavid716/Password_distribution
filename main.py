@@ -15,7 +15,7 @@ def get_prefix(password_list):
     for password in password_list:
         prefix = ""
         for letter in password:
-            if letter.isdigit():
+            if letter.isalpha() is False:
               prefix = prefix + letter
             else:
               break
@@ -24,7 +24,8 @@ def get_prefix(password_list):
             prefix = ""
         #print("Password is {} and prefix is {}".format(password,prefix))
 
-        password_without_prefix = password.replace(prefix,'')
+        password_without_prefix = password[ len(prefix) : len(password)]
+        
         list_password_without_prefix.append(password_without_prefix)
         list_prefix.append(prefix)
     
@@ -37,20 +38,22 @@ def get_suffix(password_list):
     for password in password_list:
         suffix = ""
         password_reverse = password[::-1]
+     
         for letter in password_reverse:
-            if letter.isdigit():
+            if letter.isalpha() is False:
               suffix = suffix + letter
             else:
               break
-
+               
         if suffix == password_reverse:
             suffix = ""
         
+        suffix_reverse = suffix[::-1]
         #print("Password is {} and suffix is {}".format(password,suffix))
-
-        password_without_suffix = password.replace(suffix,'')
+        print(password)
+        password_without_suffix = password[ 0 : len(password)-len(suffix_reverse)]
         list_baseword.append(password_without_suffix)
-        list_suffix.append(suffix)
+        list_suffix.append(suffix_reverse)
     
     return list_suffix, list_baseword;
 
