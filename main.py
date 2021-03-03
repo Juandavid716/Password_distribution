@@ -70,14 +70,11 @@ def shift_pattern(baseword_list):
            
            if letter.isupper(): 
              if index < length // 2:
-                cont += 1
-                shift.append(cont)
+                shift.append(index)
              else:
-                 shift_negative.append(cont_r)
+                 shift.append(index-length)
                  cont_r -= 1
-
-        shift_negative = shift_negative[::-1]
-        shift.extend(shift_negative)
+                 
         list_shift.append(shift)
 
     return list_shift
