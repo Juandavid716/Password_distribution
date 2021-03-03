@@ -1,3 +1,4 @@
+from collections import Counter
 
 # Get the list of passwords from the file
 def get_list():
@@ -81,17 +82,57 @@ def shift_pattern(baseword_list):
 
     return list_shift
 
-        
+def get_probability(frequency,length):
+    list_probabilities = []
 
+    for index in frequency:
+        result = frequency[index] / length
+        list_probabilities.append(result)
+
+    return list_probabilities
+
+def get_frequency(list, length):
+    frequency={} 
+
+    for i in list:
+        frequency[i]=list.count(i)
+    
+ 
+    return get_probability(frequency, length)
+
+def get_frequency_shift(list_s, length):
+    list_probabilities = []
+    list_copy = dict(Counter(tuple(x) for x in list_s))
+    
+    return get_probability(list_copy,length)
+     
 
 def main():
     list = get_list()
+    length = len(list)
     list_prefix, list_without_prefix = get_prefix(list)
-    list_sufix, list_baseword = get_suffix(list_without_prefix)
+    list_suffix, list_baseword = get_suffix(list_without_prefix)
     list_shift = shift_pattern(list_baseword)
-    print("Lista de prefijos",list_prefix)
-    print("Lista de base words",list_baseword)
-    print("Lista de sufijos", list_sufix)
-    print("Lista de shift pattern", list_shift)
+    
+    # 4D MODEL
+    print("Prefix list",list_prefix)
+    print("Base word list",list_baseword)
+    print("Suffix list", list_suffix)
+    print("shift pattern list", list_shift)
+    
+    # List of probabilities
+    list_prob_prefix =  get_frequency(list_prefix, length)
+    list_prob_basew = get_frequency(list_baseword, length)
+    list_prob_suffix= get_frequency(list_suffix, length)
+    list_prob_shift = get_frequency_shift(list_shift, length)
+
+    print("                           ")
+    print("Probability table     ")
+    print("                           ")
+    print("Probabiliies from prefix",list_prob_prefix)
+    print("Probabilities from base words",list_prob_basew)
+    print("Probabilities from suffix",list_prob_suffix)
+    print("Probabilities from shift",list_prob_shift)
+
 if __name__ == "__main__":
     main()
