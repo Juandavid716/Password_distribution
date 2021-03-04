@@ -1,6 +1,6 @@
 from collections import Counter
 from database import create_connection
-
+from create_tables import create_table
 # Get the list of passwords from the file
 def get_list():
  data = []
@@ -172,15 +172,15 @@ def main():
     probability = "0.9"
     con = create_connection(r'./databases/test.db')
     cur = con.cursor() 
-    customers_sql = """
-     CREATE TABLE IF NOT EXISTS prefix_table (
-        dimension VARCHAR(30) NOT NULL,
-        probability VARCHAR(30) NOT NULL)"""
-
-    cur.execute(customers_sql)
-  
-    cur.execute("insert into prefix_table (dimension, probability) values(?,?)",(dimension, probability))
-    con.commit()
+    
+    #Create tables
+    create_table("prefix_table", cur)
+    create_table("suffix_table", cur)
+    create_table("baseword_table", cur)
+    create_table("shift_table", cur)
+    create_table("table_133t", cur)
+    # cur.execute("insert into prefix_table (dimension, probability) values(?,?)",(dimension, probability))
+    # con.commit()
 
     list = get_list()
     length = len(list)
