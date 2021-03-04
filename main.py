@@ -1,4 +1,5 @@
 from collections import Counter
+from database import create_connection
 
 # Get the list of passwords from the file
 def get_list():
@@ -166,11 +167,27 @@ def get_133t_transformation(list_baseword):
 
 
 def main():
+    #Conexion
+    dimension = "12p"
+    probability = "0.9"
+    con = create_connection(r'./databases/test.db')
+    cur = con.cursor() 
+    customers_sql = """
+     CREATE TABLE IF NOT EXISTS prefix_table (
+        dimension VARCHAR(30) NOT NULL,
+        probability VARCHAR(30) NOT NULL)"""
+
+    cur.execute(customers_sql)
+  
+    cur.execute("insert into prefix_table (dimension, probability) values(?,?)",(dimension, probability))
+    con.commit()
+
     list = get_list()
     length = len(list)
     list_prefix, list_without_prefix = get_prefix(list)
     list_suffix, list_baseword = get_suffix(list_without_prefix)
     list_shift = shift_pattern(list_baseword)
+
     # 5D MODEL
     list_133t, list_baseword = get_133t_transformation(list_baseword)
     print("Prefix list",list_prefix)
