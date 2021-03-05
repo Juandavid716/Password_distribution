@@ -27,7 +27,6 @@ def get_prefix(password_list):
         #print("Password is {} and prefix is {}".format(password,prefix))
 
         password_without_prefix = password[ len(prefix) : len(password)]
-        
         list_password_without_prefix.append(password_without_prefix)
         list_prefix.append(prefix)
     
@@ -95,19 +94,38 @@ def get_probability(frequency,length):
 
 def get_frequency(list, length):
     frequency={} 
+    dimensions = []
 
+    # Count number of times that a prefix is repeated
     for i in list:
         frequency[i]=list.count(i)
     
- 
-    return get_probability(frequency, length)
+    
+    for key in frequency.keys():
+        dimensions.append(key)
+
+    return dimensions, get_probability(frequency, length)
 
 #Get probability from lists shift pattern dimension
-def get_frequency_shift(list_s, length):
+def get_frequency_shift(list_s, length, num):
     list_probabilities = []
     list_copy = dict(Counter(tuple(x) for x in list_s))
-    
-    return get_probability(list_copy,length)
+    dimensions = []
+
+    for key in list_copy.keys():
+
+        if num == 0:
+            values = "["+','.join(str(v) for v in key)+"]"
+            print(values)
+        else:
+            values = "".join(str(x) for x in key)
+            ''.join(map(str,values))
+            print(values)
+        dimensions.append(values)
+
+    return dimensions, get_probability(list_copy,length)
+
+
      
 def transform_133t(word):
     index_133t=[]
@@ -187,9 +205,9 @@ def main():
     list_prefix, list_without_prefix = get_prefix(list)
     list_suffix, list_baseword = get_suffix(list_without_prefix)
     list_shift = shift_pattern(list_baseword)
+    list_133t, list_baseword = get_133t_transformation(list_baseword)
 
     # 5D MODEL
-    list_133t, list_baseword = get_133t_transformation(list_baseword)
     print("Prefix list",list_prefix)
     print("Base word list",list_baseword)
     print("Suffix list", list_suffix)
@@ -197,11 +215,20 @@ def main():
     print("133t list",list_133t)
 
     # List of probabilities
-    list_prob_prefix =  get_frequency(list_prefix, length)
-    list_prob_basew = get_frequency(list_baseword, length)
-    list_prob_suffix= get_frequency(list_suffix, length)
-    list_prob_shift = get_frequency_shift(list_shift, length)
-    list_prob_133t =  get_frequency_shift(list_133t, length)
+    list_prefix, list_prob_prefix =  get_frequency(list_prefix, length)
+    list_baseword, list_prob_basew = get_frequency(list_baseword, length)
+    list_suffix, list_prob_suffix= get_frequency(list_suffix, length)
+    list_shift, list_prob_shift = get_frequency_shift(list_shift, length,0)
+    list_133t, list_prob_133t =  get_frequency_shift(list_133t, length,1)
+    
+    # Insertions on tables
+    cur.executemany("""INSERT INTO  prefix_table (dimension,probability) VALUES (?,?)""", zip(list_prefix,list_prob_prefix))
+    cur.executemany("""INSERT INTO  suffix_table (dimension,probability) VALUES (?,?)""", zip(list_suffix,list_prob_suffix))
+    cur.executemany("""INSERT INTO  baseword_table (dimension,probability) VALUES (?,?)""", zip(list_baseword,list_prob_basew))
+    cur.executemany("""INSERT INTO  shift_table (dimension,probability) VALUES (?,?)""", zip(list_shift,list_prob_shift))
+    cur.executemany("""INSERT INTO  table_133t (dimension,probability) VALUES (?,?)""", zip(list_133t,list_prob_133t))
+    
+    con.commit()
 
     print("                           ")
     print("Probability table     ")
