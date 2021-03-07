@@ -1,6 +1,8 @@
 from collections import Counter
 from database import create_connection
 from create_tables import create_table
+from Esrank import get_L1_L2
+import numpy as np 
 # Get the list of passwords from the file
 def get_list():
  data = []
@@ -90,6 +92,15 @@ def get_probability(frequency,length):
 
     return list_probabilities
 
+#Get probability order by desc
+def get_probability_sorted(name_list):
+    list = []
+    for row in name_list:
+        list.append(float(row[1]))
+    
+    return list
+
+
 # Count every time an element appear
 
 def get_frequency(list, length):
@@ -116,11 +127,9 @@ def get_frequency_shift(list_s, length, num):
 
         if num == 0:
             values = "["+','.join(str(v) for v in key)+"]"
-            print(values)
         else:
             values = "".join(str(x) for x in key)
             ''.join(map(str,values))
-            print(values)
         dimensions.append(values)
 
     return dimensions, get_probability(list_copy,length)
@@ -185,9 +194,7 @@ def get_133t_transformation(list_baseword):
 
 
 def main():
-    #Conexion
-    dimension = "12p"
-    probability = "0.9"
+    #Connection
     con = create_connection(r'./databases/test.db')
     cur = con.cursor() 
     
@@ -197,9 +204,8 @@ def main():
     create_table("baseword_table", cur)
     create_table("shift_table", cur)
     create_table("table_133t", cur)
-    # cur.execute("insert into prefix_table (dimension, probability) values(?,?)",(dimension, probability))
-    # con.commit()
 
+    # Get lists
     list = get_list()
     length = len(list)
     list_prefix, list_without_prefix = get_prefix(list)
@@ -207,12 +213,12 @@ def main():
     list_shift = shift_pattern(list_baseword)
     list_133t, list_baseword = get_133t_transformation(list_baseword)
 
-    # 5D MODEL
-    print("Prefix list",list_prefix)
-    print("Base word list",list_baseword)
-    print("Suffix list", list_suffix)
-    print("shift pattern list", list_shift)
-    print("133t list",list_133t)
+    # # 5D MODEL
+    # print("Prefix list",list_prefix)
+    # print("Base word list",list_baseword)
+    # print("Suffix list", list_suffix)
+    # print("shift pattern list", list_shift)
+    # print("133t list",list_133t)
 
     # List of probabilities
     list_prefix, list_prob_prefix =  get_frequency(list_prefix, length)
@@ -221,23 +227,48 @@ def main():
     list_shift, list_prob_shift = get_frequency_shift(list_shift, length,0)
     list_133t, list_prob_133t =  get_frequency_shift(list_133t, length,1)
     
-    # Insertions on tables
+    # Insertions list on database 
     cur.executemany("""INSERT INTO  prefix_table (dimension,probability) VALUES (?,?)""", zip(list_prefix,list_prob_prefix))
     cur.executemany("""INSERT INTO  suffix_table (dimension,probability) VALUES (?,?)""", zip(list_suffix,list_prob_suffix))
     cur.executemany("""INSERT INTO  baseword_table (dimension,probability) VALUES (?,?)""", zip(list_baseword,list_prob_basew))
     cur.executemany("""INSERT INTO  shift_table (dimension,probability) VALUES (?,?)""", zip(list_shift,list_prob_shift))
     cur.executemany("""INSERT INTO  table_133t (dimension,probability) VALUES (?,?)""", zip(list_133t,list_prob_133t))
-    
     con.commit()
 
-    print("                           ")
-    print("Probability table     ")
-    print("                           ")
-    print("Probabiliies from prefix",list_prob_prefix)
-    print("Probabilities from base words",list_prob_basew)
-    print("Probabilities from suffix",list_prob_suffix)
-    print("Probabilities from shift",list_prob_shift)
-    print("Probabiliies from 133t transformation", list_prob_133t)
+    # Get probabilities sorted by highest probability
+    prefix_probabilities = cur.execute("SELECT * FROM prefix_table ORDER BY probability DESC ").fetchall()
+    suffix_probabilities = cur.execute("SELECT * FROM suffix_table ORDER BY probability DESC ").fetchall()
+    baseword_probabilities = cur.execute("SELECT * FROM baseword_table ORDER BY probability DESC ").fetchall()
+    shift_probabilities = cur.execute("SELECT * FROM shift_table ORDER BY probability DESC ").fetchall()
+    t133_probabilities = cur.execute("SELECT * FROM table_133t ORDER BY probability DESC ").fetchall()
+
+    P1 = get_probability_sorted(prefix_probabilities)
+    P2 = get_probability_sorted(suffix_probabilities)
+    P3 = get_probability_sorted(baseword_probabilities)
+    P4 = get_probability_sorted(shift_probabilities)
+    P5 = get_probability_sorted(t133_probabilities)
+    
+    # P = List of lists 
+    P = [P1,P2,P3,P4,P5]
+    #print(P)
+
+    gamma=1.09
+    dimensiones=5
+    b=5
+    p=P1[4]*P2[2]*P3[2]*P4[2]*P5[6]
+    L=get_L1_L2(P,dimensiones, gamma,b,p )
+
+    numbits=np.ceil(np.log2(sum(L)/2))
+    print("Con una enumeración de ", int(2**(numbits)), " contraseñas candidatas se podría recuperar la contraseña ")
+
+    # print("                           ")
+    # print("Probability table     ")
+    # print("                           ")
+    # print("Probabiliies from prefix",list_prob_prefix)
+    # print("Probabilities from base words",list_prob_basew)
+    # print("Probabilities from suffix",list_prob_suffix)
+    # print("Probabilities from shift",list_prob_shift)
+    # print("Probabiliies from 133t transformation", list_prob_133t)
 
 
 if __name__ == "__main__":
