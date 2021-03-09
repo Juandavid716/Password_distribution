@@ -3,6 +3,8 @@ from database import create_connection
 from create_tables import create_table
 from Esrank import get_L1_L2
 import numpy as np 
+from rank import transform_133t
+from rank import rank_estimation
 # Get the list of passwords from the file
 def get_list():
  data = []
@@ -135,52 +137,6 @@ def get_frequency_shift(list_s, length, num):
     return dimensions, get_probability(list_copy,length)
 
 
-     
-def transform_133t(word):
-    index_133t=[]
-    if "0" in word:
-        word=word.replace("0","o")
-        index_133t.append(1)
-    if "1" in word:
-        word=word.replace("1","i")
-        index_133t.append(12)
-    elif "!" in word:
-        word=word.replace("!","i")
-        index_133t.append(13)
-    if "@" in word:
-        word=word.replace("@","a")
-        index_133t.append(2)
-    elif "4" in word:
-        word=word.replace("4","a")
-        index_133t.append(3)
-    if "3" in word:
-        word=word.replace("3","e")
-        index_133t.append(6)
-    if "$" in word:
-        word=word.replace("$","s")
-        index_133t.append(4)
-    elif "5" in word:
-        word=word.replace("5","s")
-        index_133t.append(5)
-    if "2" in word:
-        word=word.replace("2","z")
-        index_133t.append(11)
-    if "%" in word:
-        word=word.replace("%","x")
-        index_133t.append(14)
-    if "7" in word:
-        word=word.replace("7","t")
-        index_133t.append(10)
-    elif "+" in word:
-        word=word.replace("+","t")
-        index_133t.append(9)
-    if "9" in word:
-        word=word.replace("9","g")
-        index_133t.append(8)
-    elif "6" in word:
-        word=word.replace("6","g")
-        index_133t.append(7)
-    return word,str(list(sorted(index_133t)))
 
 # Get basewords and 133_t transformations
 def get_133t_transformation(list_baseword):
@@ -248,6 +204,9 @@ def main():
     P4 = get_probability_sorted(shift_probabilities)
     P5 = get_probability_sorted(t133_probabilities)
     
+    xd = '[0,-1]'
+    prueba = cur.execute("SELECT probability FROM shift_table WHERE dimension = ?", (xd,)).fetchone()[0]
+    print("prueba", prueba)
     # P = List of lists 
     P = [P1,P2,P3,P4,P5]
     #print(P)
@@ -259,8 +218,9 @@ def main():
     L=get_L1_L2(P,dimensiones, gamma,b,p )
 
     numbits=np.ceil(np.log2(sum(L)/2))
-    print("Con una enumeración de ", int(2**(numbits)), " contraseñas candidatas se podría recuperar la contraseña ")
+    print("With an enumeration of", int(2**(numbits)), " candidates passwords is possible to recover this password ")
 
+    print("Result from rank estimation is",rank_estimation("holaxd",con))
     # print("                           ")
     # print("Probability table     ")
     # print("                           ")

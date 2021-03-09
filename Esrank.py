@@ -107,3 +107,7 @@ def get_L1_L2(P,d,gamma,b,p):
     print(Scurr)
     (lb,ub)= upperLower(S[d-1],Scurr,p,b)
     return (lb,ub)
+
+def main2(L1,L2,p,b):  
+    (lb,ub)= upperLower(L1,L2,p,b)
+    return (lb,ub)
