@@ -206,23 +206,25 @@ def main():
 
     # P = List of lists 
     P = [P1,P2,P3,P4,P5]
+    LP = [len(P1),len(P2),len(P3),len(P4),len(P5)]
+    minimum = np.min(LP)
     #print(P)
 
-    gamma=1.09
-    dimensiones=5
-    b=5
-    p=P1[4]*P2[2]*P3[2]*P4[2]*P5[6]
-    L=get_L1_L2(P,dimensiones, gamma,b,p )
 
-    numbits=np.ceil(np.log2(sum(L)/2))
-    print("With an enumeration of", int(2**(numbits)), " candidates passwords is possible to recover this password ")
-  
-    L = rank_estimation("@isaliiana123",con)
-    if L == -5:
+    dimensiones=5
+    b= minimum
+    gamma= (b+1) / b
+    print(gamma)
+    p=P1[4]*P2[2]*P3[2]*P4[2]*P5[6]
+    L1, L2=get_L1_L2(P,dimensiones, gamma,b,p )
+
+    R = rank_estimation(L1,L2,"juan",con, b)
+    if R == -5:
         print("None")
     else:
-      numbits=np.ceil(np.log2(L))
-      print("Numbit is", ((numbits)))
+      numbits=np.ceil(np.log2(R))
+      print("Bits number", numbits)
+      print("With an enumeration of", int(2**(numbits)), " candidates passwords is possible to recover this password ")
 
     # print("                           ")
     # print("Probability table     ")

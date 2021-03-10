@@ -101,12 +101,8 @@ def get_L1_L2(P,d,gamma,b,p):
 
     for i in range(1,d-1):
         Scurr=sampleMerge(S[i],Scurr,gamma,b)
-    print("L1=")
-    print(S[d-1])
-    print("L2=")
-    print(Scurr)
-    (lb,ub)= upperLower(S[d-1],Scurr,p,b)
-    return (lb,ub)
+
+    return (S[d-1],Scurr)
 
 def main2(L1,L2,p,b):  
     (lb,ub)= upperLower(L1,L2,p,b)
