@@ -203,10 +203,7 @@ def main():
     P3 = get_probability_sorted(baseword_probabilities)
     P4 = get_probability_sorted(shift_probabilities)
     P5 = get_probability_sorted(t133_probabilities)
-    
-    xd = '[0,-1]'
-    prueba = cur.execute("SELECT probability FROM shift_table WHERE dimension = ?", (xd,)).fetchone()[0]
-    print("prueba", prueba)
+
     # P = List of lists 
     P = [P1,P2,P3,P4,P5]
     #print(P)
@@ -219,8 +216,11 @@ def main():
 
     numbits=np.ceil(np.log2(sum(L)/2))
     print("With an enumeration of", int(2**(numbits)), " candidates passwords is possible to recover this password ")
+  
+    L = rank_estimation("pV@CDoSL#S8N",con)
+    numbits=np.ceil(np.log2(L))
+    print("Numbit is", int((numbits)))
 
-    print("Result from rank estimation is",rank_estimation("holaxd",con))
     # print("                           ")
     # print("Probability table     ")
     # print("                           ")

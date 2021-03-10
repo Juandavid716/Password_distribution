@@ -30,7 +30,7 @@ def unShiftWord(word):
                 lst.append(i)
         else:
             p=p+word[i]
-    return p,str(tuple(lst))
+    return p,(str(lst))
 
 def transform_133t(word):
     index_133t=[]
@@ -123,6 +123,7 @@ def rank_estimation(password,con):
                     if (pp1!=None and pp2!=None and pp3!=None ):
                         if float(pp1)*float(pp2)*float(pp3)>maxProb:
                             maxProb=float(pp1)*float(pp2)*float(pp3)
+                            print(maxProb)
                             
             pos1="[]"
             pos2="[]"
@@ -131,9 +132,10 @@ def rank_estimation(password,con):
                 pp5_result=cur.execute("SELECT probability FROM table_133t WHERE dimension = ?", (pos2,)).fetchone()
 
                 pp4 = condition(pp4_result)
+                
                 pp5 = condition(pp5_result)
                 prob=maxProb*float(pp4)*float(pp5)
-                L=ESrank.main2(L1,L2,prob,14)
+                L=main2(L1,L2,prob,14)
                 L=sum(L)/2
             else:
                 L=-5
@@ -157,7 +159,8 @@ def rank_estimation(password,con):
             
             unShiftP2,pos1=unShiftWord(P2)
             unLeetP2,pos2=transform_133t(unShiftP2)
-           
+            pos1 = str(pos1).replace(' ','')
+       
             pp1_result=cur.execute("SELECT probability FROM prefix_table WHERE dimension = ?", (P1,)).fetchone()
             pp2_result=cur.execute("SELECT probability FROM baseword_table WHERE dimension = ?", (unLeetP2,)).fetchone()
             pp3_result=cur.execute("SELECT probability FROM suffix_table WHERE dimension = ?", (P3,)).fetchone()
@@ -169,9 +172,10 @@ def rank_estimation(password,con):
             pp4 = condition(pp4_result)
             pp5 = condition(pp5_result)
            
-            
+
             if (pp1!=None and pp2!=None and pp3!=None and pp4!=None and pp5!=None):
                 prob=float(pp1)*float(pp2)*float(pp3)*float(pp4)*float(pp5)
+         
                 L=main2(L1,L2,prob,14)
                 L=sum(L)/2
             else:
