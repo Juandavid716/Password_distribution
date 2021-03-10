@@ -160,7 +160,7 @@ def rank_estimation(password,con):
             unShiftP2,pos1=unShiftWord(P2)
             unLeetP2,pos2=transform_133t(unShiftP2)
             pos1 = str(pos1).replace(' ','')
-       
+            print(unLeetP2)
             pp1_result=cur.execute("SELECT probability FROM prefix_table WHERE dimension = ?", (P1,)).fetchone()
             pp2_result=cur.execute("SELECT probability FROM baseword_table WHERE dimension = ?", (unLeetP2,)).fetchone()
             pp3_result=cur.execute("SELECT probability FROM suffix_table WHERE dimension = ?", (P3,)).fetchone()
@@ -171,11 +171,15 @@ def rank_estimation(password,con):
             pp3 = condition(pp3_result)
             pp4 = condition(pp4_result)
             pp5 = condition(pp5_result)
-           
+            print(pp1)
+            print(pp2)
+            print(pp3)
+            print(pp4)
+            print(pp5)
 
             if (pp1!=None and pp2!=None and pp3!=None and pp4!=None and pp5!=None):
                 prob=float(pp1)*float(pp2)*float(pp3)*float(pp4)*float(pp5)
-         
+               
                 L=main2(L1,L2,prob,14)
                 L=sum(L)/2
             else:

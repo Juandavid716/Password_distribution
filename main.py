@@ -217,9 +217,12 @@ def main():
     numbits=np.ceil(np.log2(sum(L)/2))
     print("With an enumeration of", int(2**(numbits)), " candidates passwords is possible to recover this password ")
   
-    L = rank_estimation("pV@CDoSL#S8N",con)
-    numbits=np.ceil(np.log2(L))
-    print("Numbit is", int((numbits)))
+    L = rank_estimation("@isaliiana123",con)
+    if L == -5:
+        print("None")
+    else:
+      numbits=np.ceil(np.log2(L))
+      print("Numbit is", ((numbits)))
 
     # print("                           ")
     # print("Probability table     ")
