@@ -6,10 +6,31 @@ import numpy as np
 from rank import transform_133t
 from rank import rank_estimation
 import copy
+import ast 
+
+def  write_L1_L2(P,dimensiones, gamma,b,p ):
+    L1, L2 = get_L1_L2(P,dimensiones, gamma,b,p )
+    print(type(L1))
+    f=open("training.txt","w")
+    f.write(str(L1)+"\n")
+    f.write(str(L2))
+    f.close()
+
+def read_L1_L2():
+    data = []
+    with open("training.txt") as fname:
+        lines = fname.readlines()
+        for line in lines:
+            data.append(line.strip('\n'))
+    res = ast.literal_eval(data[0]) 
+    res2 = ast.literal_eval(data[1]) 
+    return res,res2
+    
+
 # Get the list of passwords from the file
 def get_list():
  data = []
- with open("minidataset.txt") as fname:
+ with open("passwords.txt") as fname:
     lines = fname.readlines()
     for line in lines:
         data.append(line.strip('\n'))
@@ -209,18 +230,23 @@ def main():
     P = [P1,P2,P3,P4,P5]
     LP = [len(P1),len(P2),len(P3),len(P4),len(P5)]
     minimum = np.min(LP)
-    #print(P)
     dimensiones=5
     b= minimum.item()
   
     gamma= (b+1) / b
     print(gamma)
     p=P1[4]*P2[2]*P3[2]*P4[2]*P5[6]
-    L1, L2=get_L1_L2(P,dimensiones, gamma,b,p )
+    
 
-    R = rank_estimation(L1,L2,"juan",con, b)
+    write_L1_L2(P,dimensiones, gamma,b,p )
+
+    L1, L2 = read_L1_L2()
+  
+    R = rank_estimation(L1,L2,"3saminiais04",con, b)
     if R == -5:
         print("None")
+    elif R == 0:
+        print("Equals to 0")
     else:
       numbits=np.ceil(np.log2(R))
       print("Bits number", numbits)
