@@ -79,7 +79,9 @@ def upperLower(S1,S2,p,b):
             if pNext<p<pCurr:
                 u=S2[j][1]-1
                 l=S2[j-1][2]
+         
                 ub=ub+u
+              
                 lb=lb+l
                 if i>=b:
                     ub=ub+uPrev*(S1[i][1]-S1[i-1][1]-1)

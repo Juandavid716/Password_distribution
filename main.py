@@ -5,10 +5,11 @@ from Esrank import get_L1_L2
 import numpy as np 
 from rank import transform_133t
 from rank import rank_estimation
+import copy
 # Get the list of passwords from the file
 def get_list():
  data = []
- with open("passwords.txt") as fname:
+ with open("minidataset.txt") as fname:
     lines = fname.readlines()
     for line in lines:
         data.append(line.strip('\n'))
@@ -209,10 +210,9 @@ def main():
     LP = [len(P1),len(P2),len(P3),len(P4),len(P5)]
     minimum = np.min(LP)
     #print(P)
-
-
     dimensiones=5
-    b= minimum
+    b= minimum.item()
+  
     gamma= (b+1) / b
     print(gamma)
     p=P1[4]*P2[2]*P3[2]*P4[2]*P5[6]
