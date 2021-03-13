@@ -27,11 +27,19 @@ def read_L1_L2():
     res2 = ast.literal_eval(data[1]) 
     return res,res2
     
+def get_record(cur,query):
+    value = cur.execute(query).fetchone()
+    
+    if value == None:
+        value = 0
+    else:
+        value = value[0]
+    return value
 
 # Get the list of passwords from the file
-def get_list():
+def get_list(name_file):
  data = []
- with open("passwords.txt") as fname:
+ with open(name_file) as fname:
     lines = fname.readlines()
     for line in lines:
         data.append(line.strip('\n'))
@@ -176,51 +184,60 @@ def main():
     #Connection
     con = create_connection(r'./databases/test.db')
     cur = con.cursor() 
+    name_file = "minidataset.txt"
+    # Hash section - check if a txt from passwords has been changed. If it has been changed, it's necessary to find again L1 and L2 values. 
     
-    #Create tables
-    create_table("prefix_table", cur)
-    create_table("suffix_table", cur)
-    create_table("baseword_table", cur)
-    create_table("shift_table", cur)
-    create_table("table_133t", cur)
+    create_table_hash(cur)
+    length_hash_table = get_record(cur,"SELECT COUNT(*) FROM hash_table")
+    last_record = get_record(cur,"SELECT * FROM hash_table ORDER BY ROWID DESC LIMIT 1")
+    number_hash = get_hash(name_file)
+    if length_hash_table == 0 or number_hash != last_record:
+        
+        #Create tables
+        create_table("prefix_table", cur)
+        create_table("suffix_table", cur)
+        create_table("baseword_table", cur)
+        create_table("shift_table", cur)
+        create_table("table_133t", cur)
 
-    # Get lists
-    list = get_list()
-    length = len(list)
-    list_prefix, list_without_prefix = get_prefix(list)
-    list_suffix, list_baseword = get_suffix(list_without_prefix)
-    list_shift = shift_pattern(list_baseword)
-    list_133t, list_baseword = get_133t_transformation(list_baseword)
+        # Get lists
+        list = get_list(name_file)
+        length = len(list)
+        list_prefix, list_without_prefix = get_prefix(list)
+        list_suffix, list_baseword = get_suffix(list_without_prefix)
+        list_shift = shift_pattern(list_baseword)
+        list_133t, list_baseword = get_133t_transformation(list_baseword)
 
-    # # 5D MODEL
-    # print("Prefix list",list_prefix)
-    # print("Base word list",list_baseword)
-    # print("Suffix list", list_suffix)
-    # print("shift pattern list", list_shift)
-    # print("133t list",list_133t)
+        # # 5D MODEL
+        # print("Prefix list",list_prefix)
+        # print("Base word list",list_baseword)
+        # print("Suffix list", list_suffix)
+        # print("shift pattern list", list_shift)
+        # print("133t list",list_133t)
 
-    # List of probabilities
-    list_prefix, list_prob_prefix =  get_frequency(list_prefix, length)
-    list_baseword, list_prob_basew = get_frequency(list_baseword, length)
-    list_suffix, list_prob_suffix= get_frequency(list_suffix, length)
-    list_shift, list_prob_shift = get_frequency_shift(list_shift, length,0)
-    list_133t, list_prob_133t =  get_frequency_shift(list_133t, length,1)
-    
-    # Insertions list on database 
-    cur.executemany("""INSERT INTO  prefix_table (dimension,probability) VALUES (?,?)""", zip(list_prefix,list_prob_prefix))
-    cur.executemany("""INSERT INTO  suffix_table (dimension,probability) VALUES (?,?)""", zip(list_suffix,list_prob_suffix))
-    cur.executemany("""INSERT INTO  baseword_table (dimension,probability) VALUES (?,?)""", zip(list_baseword,list_prob_basew))
-    cur.executemany("""INSERT INTO  shift_table (dimension,probability) VALUES (?,?)""", zip(list_shift,list_prob_shift))
-    cur.executemany("""INSERT INTO  table_133t (dimension,probability) VALUES (?,?)""", zip(list_133t,list_prob_133t))
-    con.commit()
+        # List of probabilities
+        list_prefix, list_prob_prefix =  get_frequency(list_prefix, length)
+        list_baseword, list_prob_basew = get_frequency(list_baseword, length)
+        list_suffix, list_prob_suffix= get_frequency(list_suffix, length)
+        list_shift, list_prob_shift = get_frequency_shift(list_shift, length,0)
+        list_133t, list_prob_133t =  get_frequency_shift(list_133t, length,1)
+        
+        # Insertions list on database 
+        cur.executemany("""INSERT INTO  prefix_table (dimension,probability) VALUES (?,?)""", zip(list_prefix,list_prob_prefix))
+        cur.executemany("""INSERT INTO  suffix_table (dimension,probability) VALUES (?,?)""", zip(list_suffix,list_prob_suffix))
+        cur.executemany("""INSERT INTO  baseword_table (dimension,probability) VALUES (?,?)""", zip(list_baseword,list_prob_basew))
+        cur.executemany("""INSERT INTO  shift_table (dimension,probability) VALUES (?,?)""", zip(list_shift,list_prob_shift))
+        cur.executemany("""INSERT INTO  table_133t (dimension,probability) VALUES (?,?)""", zip(list_133t,list_prob_133t))
+        con.commit()
 
     # Get probabilities sorted by highest probability
-    prefix_probabilities = cur.execute("SELECT * FROM prefix_table ORDER BY probability DESC ").fetchall()
-    suffix_probabilities = cur.execute("SELECT * FROM suffix_table ORDER BY probability DESC ").fetchall()
-    baseword_probabilities = cur.execute("SELECT * FROM baseword_table ORDER BY probability DESC ").fetchall()
-    shift_probabilities = cur.execute("SELECT * FROM shift_table ORDER BY probability DESC ").fetchall()
-    t133_probabilities = cur.execute("SELECT * FROM table_133t ORDER BY probability DESC ").fetchall()
+    prefix_probabilities = cur.execute("SELECT * FROM prefix_table ORDER BY CAST(probability as FLOAT) DESC ").fetchall()
+    suffix_probabilities = cur.execute("SELECT * FROM suffix_table ORDER BY CAST(probability as FLOAT) DESC ").fetchall()
+    baseword_probabilities = cur.execute("SELECT * FROM baseword_table ORDER BY CAST(probability as FLOAT) DESC ").fetchall()
+    shift_probabilities = cur.execute("SELECT * FROM shift_table ORDER BY CAST(probability as FLOAT)  DESC ").fetchall()
+    t133_probabilities = cur.execute("SELECT * FROM table_133t ORDER BY CAST(probability as FLOAT)  DESC ").fetchall()
 
+    
     P1 = get_probability_sorted(prefix_probabilities)
     P2 = get_probability_sorted(suffix_probabilities)
     P3 = get_probability_sorted(baseword_probabilities)
@@ -236,26 +253,14 @@ def main():
     gamma= (b+1) / b
     p=P1[4]*P2[2]*P3[2]*P4[2]*P5[6]
     
-    # Hash section - check if a txt from passwords has been changed. If it has been changed, it's necessary to find again L1 and L2 values. 
-    create_table_hash(cur)
-    length_hash_table = cur.execute("SELECT COUNT(*) FROM hash_table").fetchone()[0]
-    
-    number_hash = get_hash("passwords.txt")
-
-    if length_hash_table == 0:
+    if length_hash_table == 0 or number_hash != last_record:
         write_L1_L2(P,dimensiones, gamma,b,p )
         cur.execute('INSERT INTO hash_table VALUES(?)', [number_hash])
         con.commit()
-    else:
-        last_record = cur.execute("SELECT * FROM hash_table ORDER BY ROWID DESC LIMIT 1").fetchone()[0]
-        if number_hash != last_record:
-            write_L1_L2(P,dimensiones, gamma,b,p )
-            cur.execute('INSERT INTO hash_table VALUES(?)', [number_hash])
-            con.commit()
-            
+    
     print("Reading L1 and L2 values ...")  
     L1, L2 = read_L1_L2()
-    R = rank_estimation(L1,L2,"3saminiais04",con, b)
+    R = rank_estimation(L1,L2,"pedro",con, b)
 
     if R == -5:
         print("None")
