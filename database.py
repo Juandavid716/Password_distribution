@@ -12,7 +12,7 @@ def create_connection(db_file):
     conn = None
     try:
         conn = connect(db_file)
-        print("CONECTADO")
+        print("connected to database")
     except Error as e:
         print(e)
 

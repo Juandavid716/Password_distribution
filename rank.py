@@ -90,7 +90,6 @@ def condition(prob):
 
 def rank_estimation(L1, L2, password,con, b):
     cur = con.cursor() 
-    print("password")
     
     first=True
     last=True

@@ -16,7 +16,7 @@ def get_hash(name):
             md5.update(data)
             sha1.update(data)
 
-    print("MD5: {0}".format(md5.hexdigest()))
-    print("SHA1: {0}".format(sha1.hexdigest()))
+    # print("MD5: {0}".format(md5.hexdigest()))
+    # print("SHA1: {0}".format(sha1.hexdigest()))
     return sha1.hexdigest()
     

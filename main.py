@@ -1,16 +1,17 @@
 from collections import Counter
 from database import create_connection
 from create_tables import create_table
+from create_tables import create_table_hash
 from Esrank import get_L1_L2
-import numpy as np 
+from hash import get_hash
 from rank import transform_133t
 from rank import rank_estimation
+import numpy as np 
 import copy
 import ast 
 
 def  write_L1_L2(P,dimensiones, gamma,b,p ):
     L1, L2 = get_L1_L2(P,dimensiones, gamma,b,p )
-    print(type(L1))
     f=open("training.txt","w")
     f.write(str(L1)+"\n")
     f.write(str(L2))
@@ -232,17 +233,30 @@ def main():
     minimum = np.min(LP)
     dimensiones=5
     b= minimum.item()
-  
     gamma= (b+1) / b
-    print(gamma)
     p=P1[4]*P2[2]*P3[2]*P4[2]*P5[6]
     
+    # Hash section - check if a txt from passwords has been changed. If it has been changed, it's necessary to find again L1 and L2 values. 
+    create_table_hash(cur)
+    length_hash_table = cur.execute("SELECT COUNT(*) FROM hash_table").fetchone()[0]
+    
+    number_hash = get_hash("passwords.txt")
 
-    write_L1_L2(P,dimensiones, gamma,b,p )
-
+    if length_hash_table == 0:
+        write_L1_L2(P,dimensiones, gamma,b,p )
+        cur.execute('INSERT INTO hash_table VALUES(?)', [number_hash])
+        con.commit()
+    else:
+        last_record = cur.execute("SELECT * FROM hash_table ORDER BY ROWID DESC LIMIT 1").fetchone()[0]
+        if number_hash != last_record:
+            write_L1_L2(P,dimensiones, gamma,b,p )
+            cur.execute('INSERT INTO hash_table VALUES(?)', [number_hash])
+            con.commit()
+            
+    print("Reading L1 and L2 values ...")  
     L1, L2 = read_L1_L2()
-  
     R = rank_estimation(L1,L2,"3saminiais04",con, b)
+
     if R == -5:
         print("None")
     elif R == 0:
