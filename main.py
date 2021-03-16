@@ -9,6 +9,7 @@ from rank import rank_estimation
 import numpy as np 
 import copy
 import ast 
+import timeit
 
 def  write_L1_L2(P,dimensiones, gamma,b,p ):
     L1, L2 = get_L1_L2(P,dimensiones, gamma,b,p )
@@ -182,9 +183,10 @@ def get_133t_transformation(list_baseword):
 
 def main():
     #Connection
+    start = timeit.default_timer()
     con = create_connection(r'./databases/test.db')
     cur = con.cursor() 
-    name_file = "minidataset.txt"
+    name_file = "generated_pass.txt"
     # Hash section - check if a txt from passwords has been changed. If it has been changed, it's necessary to find again L1 and L2 values. 
     
     create_table_hash(cur)
@@ -199,14 +201,19 @@ def main():
         create_table("baseword_table", cur)
         create_table("shift_table", cur)
         create_table("table_133t", cur)
-
+        
+        print("Tables created")
         # Get lists
         list = get_list(name_file)
         length = len(list)
         list_prefix, list_without_prefix = get_prefix(list)
+        print("prefix list created")
         list_suffix, list_baseword = get_suffix(list_without_prefix)
+        print("suffix list created")
         list_shift = shift_pattern(list_baseword)
+        print("shift list created")
         list_133t, list_baseword = get_133t_transformation(list_baseword)
+        print("133t list created")
 
         # # 5D MODEL
         # print("Prefix list",list_prefix)
@@ -217,10 +224,15 @@ def main():
 
         # List of probabilities
         list_prefix, list_prob_prefix =  get_frequency(list_prefix, length)
+        print("prefix prob created")
         list_baseword, list_prob_basew = get_frequency(list_baseword, length)
+        print("prefix base created")
         list_suffix, list_prob_suffix= get_frequency(list_suffix, length)
+        print("prefix suf created")
         list_shift, list_prob_shift = get_frequency_shift(list_shift, length,0)
+        print("prefix shift created")
         list_133t, list_prob_133t =  get_frequency_shift(list_133t, length,1)
+        print("prefix 133t created")
         
         # Insertions list on database 
         cur.executemany("""INSERT INTO  prefix_table (dimension,probability) VALUES (?,?)""", zip(list_prefix,list_prob_prefix))
@@ -230,6 +242,8 @@ def main():
         cur.executemany("""INSERT INTO  table_133t (dimension,probability) VALUES (?,?)""", zip(list_133t,list_prob_133t))
         con.commit()
 
+        print("insertions created")
+
     # Get probabilities sorted by highest probability
     prefix_probabilities = cur.execute("SELECT * FROM prefix_table ORDER BY CAST(probability as FLOAT) DESC ").fetchall()
     suffix_probabilities = cur.execute("SELECT * FROM suffix_table ORDER BY CAST(probability as FLOAT) DESC ").fetchall()
@@ -237,6 +251,7 @@ def main():
     shift_probabilities = cur.execute("SELECT * FROM shift_table ORDER BY CAST(probability as FLOAT)  DESC ").fetchall()
     t133_probabilities = cur.execute("SELECT * FROM table_133t ORDER BY CAST(probability as FLOAT)  DESC ").fetchall()
 
+    print("probabilities calculated")
     
     P1 = get_probability_sorted(prefix_probabilities)
     P2 = get_probability_sorted(suffix_probabilities)
@@ -244,6 +259,7 @@ def main():
     P4 = get_probability_sorted(shift_probabilities)
     P5 = get_probability_sorted(t133_probabilities)
 
+    print("Prob ordered")
     # P = List of lists 
     P = [P1,P2,P3,P4,P5]
     LP = [len(P1),len(P2),len(P3),len(P4),len(P5)]
@@ -271,6 +287,9 @@ def main():
       print("Bits number", numbits)
       print("With an enumeration of", int(2**(numbits)), " candidates passwords is possible to recover this password ")
 
+    stop = timeit.default_timer()
+
+    print('Time: ', stop - start)  
     # print("                           ")
     # print("Probability table     ")
     # print("                           ")
