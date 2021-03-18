@@ -181,7 +181,7 @@ def get_133t_transformation(list_baseword):
     return list_133t, list_new_basewords
 
 
-def main():
+def main(password):
     #Connection
     start = timeit.default_timer()
     con = create_connection(r'./databases/test.db')
@@ -192,7 +192,9 @@ def main():
     create_table_hash(cur)
     length_hash_table = get_record(cur,"SELECT COUNT(*) FROM hash_table")
     last_record = get_record(cur,"SELECT * FROM hash_table ORDER BY ROWID DESC LIMIT 1")
-    number_hash = get_hash(name_file)
+    number_hash = get_hash("generated_pass.txt")
+    print("number_hash ", number_hash)
+    print("last record",last_record)
     if length_hash_table == 0 or number_hash != last_record:
         
         #Create tables
@@ -276,7 +278,7 @@ def main():
     
     print("Reading L1 and L2 values ...")  
     L1, L2 = read_L1_L2()
-    R = rank_estimation(L1,L2,"pedro",con, b)
+    R = rank_estimation(L1,L2,password,con, b)
 
     if R == -5:
         print("None")
@@ -289,7 +291,9 @@ def main():
 
     stop = timeit.default_timer()
 
-    print('Time: ', stop - start)  
+    print('Time: ', stop - start)
+
+    return int(2**(numbits))
     # print("                           ")
     # print("Probability table     ")
     # print("                           ")
