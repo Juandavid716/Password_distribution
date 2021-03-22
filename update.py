@@ -20,12 +20,12 @@ def get_repeated(list_x):
     return  frequency
 
 
-def update_data(file):
+def update_data(file, total):
     con = create_connection(r'./databases/test.db')
     cur = con.cursor() 
 
     data = get_list(file)
-
+    new_total = len(data)
     list_prefix, list_without_prefix = get_prefix(data)
     list_suffix, list_baseword = get_suffix(list_without_prefix)
     list_shift = shift_pattern(list_baseword)
@@ -41,15 +41,28 @@ def update_data(file):
     shift= dict(Counter(tuple(x) for x in list_shift))
     t133 = dict(Counter(tuple(x) for x in list_133t))
 
-    pr = 1
-    num = 0.00717213114754
-
-    cur.execute("INSERT OR IGNORE INTO prefix_table (dimension, probability) VALUES (?, ?)",(pr,num))
-    cur.execute(" UPDATE prefix_table SET probability = ? WHERE dimension =?",(num,pr))
-    con.commit()
-    # for p in prefix:
-    #     print(p)
-    #     print(prefix[p])
+    
+    for p in prefix:
+        vals = cur.execute("SELECT probability FROM prefix_table WHERE dimension=?", (p, )).fetchone()
+        if vals:
+            old_probability = vals[0]
+            new_probability = float(old_probability)* total / (total + new_total) + float(prefix[p]) / (total + new_total)
+           
+            cur.execute(" UPDATE prefix_table SET probability = ? WHERE dimension =?",(new_probability,p))
+            
+            con.commit()
+        else:
+            new_probability = float(prefix[p]) / (total + new_total)
+            print(new_probability)
+            cur.execute("INSERT OR IGNORE INTO prefix_table (dimension, probability) VALUES (?, ?)",(p,new_probability))
+            con.commit()
+        
+    
+    # cur.execute("INSERT OR IGNORE INTO prefix_table (dimension, probability) VALUES (?, ?)",(pr,num))
+    # cur.execute(" UPDATE prefix_table SET probability = ? WHERE dimension =?",(num,pr))
+    # con.commit()
+    # 
+    #     
     # print(prefix)
     # print(suffix)
     # print(bw)
@@ -58,7 +71,7 @@ def update_data(file):
 
 
 if __name__ == "__main__":
-    update_data("passwords.txt")
+    update_data("passwords.txt", 999424)
     
 
 
