@@ -20,21 +20,30 @@ def get_repeated(list_x):
     
     return  frequency
 
-def get_frequency_shift(list_s,  num):
-    list_probabilities = []
-    list_copy = dict(Counter(tuple(x) for x in list_s))
-    dimensions = []
-
-    for key in list_copy.keys():
-
+def update_4D_5D(list_s,  num, name_table, con, total, new_total):
+    cur = con.cursor() 
+    for key in list_s.keys():
+    
         if num == 0:
-            values = "["+','.join(str(v) for v in key)+"]"
+            p = "["+','.join(str(v) for v in key)+"]"
         else:
-            values = "".join(str(x) for x in key)
-            ''.join(map(str,values))
-        dimensions.append(values)
+            p = "".join(str(x) for x in key)
+            ''.join(map(str,p))
 
-    return dimensions
+        vals = cur.execute("SELECT probability FROM {} WHERE dimension=?".format(name_table), (p, )).fetchone()
+        if vals:
+            old_probability = vals[0]
+      
+            new_probability = float(old_probability)* total / (total + new_total) + float(list_s[key]) / (total + new_total)
+            print(new_probability)
+            cur.execute(" UPDATE {} SET probability = ? WHERE dimension =?".format(name_table),(new_probability,p))
+            
+            con.commit()
+        else:
+            new_probability = float(list_s[key]) / (total + new_total)
+            print("sino",new_probability)
+            cur.execute("INSERT OR IGNORE INTO {} (dimension, probability) VALUES (?, ?)".format(name_table),(p,new_probability))
+            con.commit()
 
 def update_dimensions(list_dimension, name_table, con ,total, new_total):
     cur = con.cursor() 
@@ -63,7 +72,6 @@ def update_data(file, total):
     list_shift = shift_pattern(list_baseword)
     list_133t, list_baseword = get_133t_transformation(list_baseword)
 
-
     #Frequencies
     prefix = get_repeated(list_prefix)
     suffix = get_repeated(list_suffix)
@@ -71,23 +79,13 @@ def update_data(file, total):
     shift= dict(Counter(tuple(x) for x in list_shift))
     t133 = dict(Counter(tuple(x) for x in list_133t))
 
+    # Update each dimension with new probability, passing as parameters: original list, name table, connection, length of original dataset -> total, new_total = total + lenngth of new dataset
     update_dimensions(prefix, "prefix_table",con, total, new_total)
-    # for p in prefix:
-    #     vals = cur.execute("SELECT probability FROM prefix_table WHERE dimension=?", (p, )).fetchone()
-    #     if vals:
-    #         old_probability = vals[0]
-    #         new_probability = float(old_probability)* total / (total + new_total) + float(prefix[p]) / (total + new_total)
-           
-    #         cur.execute(" UPDATE prefix_table SET probability = ? WHERE dimension =?",(new_probability,p))
-            
-    #         con.commit()
-    #     else:
-    #         new_probability = float(prefix[p]) / (total + new_total)
-    #         print(new_probability)
-    #         cur.execute("INSERT OR IGNORE INTO prefix_table (dimension, probability) VALUES (?, ?)",(p,new_probability))
-    #         con.commit()
-        
-   
+    update_dimensions(suffix, "suffix_table",con, total, new_total)
+    update_dimensions(bw, "baseword_table",con, total, new_total)
+    update_4D_5D(shift,0,"shift_table", con, total, new_total)   
+    update_4D_5D(t133,1,"table_133t", con, total, new_total)
+    
     # for key in shift.keys():
     #     num=0
     #     if num == 0:
