@@ -1,6 +1,7 @@
 from flask_restful import Resource
 from main import main
 
+
 class Password(Resource):
 
     def get_Pass(self,passw):
