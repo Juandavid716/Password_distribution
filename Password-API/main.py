@@ -196,7 +196,6 @@ def main(password):
     #dataset
     list = get_list(name_file)
     length = len(list)
-    print("longitud es ",length)
     length_hash_table = get_record(cur,"SELECT COUNT(*) FROM hash_table")
     last_record = get_record(cur,"SELECT * FROM hash_table ORDER BY ROWID DESC LIMIT 1")
     number_hash = get_hash(name_file)
@@ -326,5 +325,5 @@ def main(password):
 
 
 if __name__ == "__main__":
-    main("xde")
+    main()
     

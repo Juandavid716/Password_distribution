@@ -1,9 +1,5 @@
 from database import create_connection
-from main import get_prefix
-from main import get_suffix
-from main import shift_pattern
-from main import get_133t_transformation
-from main import get_list
+import main
 from collections import Counter
 
 #STEPS
@@ -65,15 +61,15 @@ def update_data(file, total):
     con = create_connection(r'./databases/test.db')
     cur = con.cursor() 
 
-    data = get_list(file)
+    data = main.get_list(file)
     new_total = len(data)
-    list_prefix, list_without_prefix = get_prefix(data)
+    list_prefix, list_without_prefix = main.get_prefix(data)
     print("done list prefix")
-    list_suffix, list_baseword = get_suffix(list_without_prefix)
+    list_suffix, list_baseword = main.get_suffix(list_without_prefix)
     print("done list suffix")
-    list_shift = shift_pattern(list_baseword)
+    list_shift = main.shift_pattern(list_baseword)
     print("done list shift")
-    list_133t, list_baseword = get_133t_transformation(list_baseword)
+    list_133t, list_baseword = main.get_133t_transformation(list_baseword)
     print("done listb")
     #Frequencies
     prefix = get_repeated(list_prefix)
