@@ -2,12 +2,6 @@ from database import create_connection
 import main
 from collections import Counter
 
-#STEPS
-#1- Get data
-#2 - Get dimensions
-#3 - Get frequency
-#4 - Get probability with new formula
-#5 - update list on database
 
 def get_repeated(list_x):
     frequency={} 
