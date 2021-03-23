@@ -8,6 +8,16 @@ def create_table(name_table, cur):
     cur.execute(query)
     cur.execute("DELETE FROM {}".format(name_table))
 
+def create_size(con, length_x):
+    cur = con.cursor() 
+    query="""
+    CREATE TABLE IF NOT EXISTS length_table (
+        length_t INTEGER PRIMARY KEY NOT NULL DEFAULT '{}'
+        )""".format(length_x)
+    cur.execute(query)
+    cur.execute("INSERT OR IGNORE INTO length_table (length_t) VALUES (?)",(length_x,))
+    con.commit()
+
 def create_table_hash( cur):
     query = """
      CREATE TABLE IF NOT EXISTS {} (

@@ -2,10 +2,12 @@ from collections import Counter
 from database import create_connection
 from create_tables import create_table
 from create_tables import create_table_hash
+from create_tables import create_size
 from Esrank import get_L1_L2
 from hash import get_hash
 from rank import transform_133t
 from rank import rank_estimation
+import update
 import numpy as np 
 import copy
 import ast 
@@ -189,12 +191,16 @@ def main(password):
     name_file = "generated_pass.txt"
     # Hash section - check if a txt from passwords has been changed. If it has been changed, it's necessary to find again L1 and L2 values. 
     
-    create_table_hash(cur)
+    create_table_hash(con)
+
+    #dataset
+    list = get_list(name_file)
+    length = len(list)
+    print("longitud es ",length)
     length_hash_table = get_record(cur,"SELECT COUNT(*) FROM hash_table")
     last_record = get_record(cur,"SELECT * FROM hash_table ORDER BY ROWID DESC LIMIT 1")
-    number_hash = get_hash("generated_pass.txt")
-    print("number_hash ", number_hash)
-    print("last record",last_record)
+    number_hash = get_hash(name_file)
+    create_size(con,length)
     if length_hash_table == 0 or number_hash != last_record:
         
         #Create tables
@@ -206,8 +212,7 @@ def main(password):
         
         print("Tables created")
         # Get lists
-        list = get_list(name_file)
-        length = len(list)
+        
         list_prefix, list_without_prefix = get_prefix(list)
         print("prefix list created")
         list_suffix, list_baseword = get_suffix(list_without_prefix)
@@ -246,6 +251,29 @@ def main(password):
 
         print("insertions created")
 
+    # Update section
+    new_list = get_list("passwords.txt")
+    lg_new_list= len(new_list)
+
+
+    if(lg_new_list>0):
+        
+        # get total size from original dataset.
+        total = get_record(cur,"SELECT * FROM length_table ORDER BY ROWID DESC LIMIT 1")
+        print(total)
+        #Update the dataset
+        update.update_data("passwords.txt",total)
+
+        #Update size 
+        new_total = total + lg_new_list
+        cur.execute("INSERT OR IGNORE INTO length_table (length_t) VALUES (?)",(new_total,))
+        con.commit()
+        # Delete all elements from file with new passwords
+        file = open('passwords.txt','w')
+        file.close()
+        
+
+
     # Get probabilities sorted by highest probability
     prefix_probabilities = cur.execute("SELECT * FROM prefix_table ORDER BY CAST(probability as FLOAT) DESC ").fetchall()
     suffix_probabilities = cur.execute("SELECT * FROM suffix_table ORDER BY CAST(probability as FLOAT) DESC ").fetchall()
@@ -271,7 +299,7 @@ def main(password):
     gamma= (b+1) / b
     p=P1[4]*P2[2]*P3[2]*P4[2]*P5[6]
     
-    if length_hash_table == 0 or number_hash != last_record:
+    if length_hash_table == 0 or number_hash != last_record or lg_new_list>0:
         write_L1_L2(P,dimensiones, gamma,b,p )
         cur.execute('INSERT INTO hash_table VALUES(?)', [number_hash])
         con.commit()
@@ -294,14 +322,7 @@ def main(password):
     print('Time: ', stop - start)
 
     return int(2**(numbits))
-    # print("                           ")
-    # print("Probability table     ")
-    # print("                           ")
-    # print("Probabiliies from prefix",list_prob_prefix)
-    # print("Probabilities from base words",list_prob_basew)
-    # print("Probabilities from suffix",list_prob_suffix)
-    # print("Probabilities from shift",list_prob_shift)
-    # print("Probabiliies from 133t transformation", list_prob_133t)
+
 
 
 if __name__ == "__main__":
