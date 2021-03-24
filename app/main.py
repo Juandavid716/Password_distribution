@@ -1,13 +1,13 @@
 from collections import Counter
-from database import create_connection
-from create_tables import create_table
-from create_tables import create_table_hash
-from create_tables import create_size
-from Esrank import get_L1_L2
-from hash import get_hash
-from rank import transform_133t
-from rank import rank_estimation
-import update
+from app.database import create_connection
+from app.create_tables import create_table
+from app.create_tables import create_table_hash
+from app.create_tables import create_size
+from app.Esrank import get_L1_L2
+from app.hash import get_hash
+from app.rank import transform_133t
+from app.rank import rank_estimation
+import app.update
 import numpy as np 
 import copy
 import ast 
@@ -15,14 +15,14 @@ import timeit
 
 def  write_L1_L2(P,dimensiones, gamma,b,p ):
     L1, L2 = get_L1_L2(P,dimensiones, gamma,b,p )
-    f=open("training.txt","w")
+    f=open("./app/training.txt","w")
     f.write(str(L1)+"\n")
     f.write(str(L2))
     f.close()
 
 def read_L1_L2():
     data = []
-    with open("training.txt") as fname:
+    with open("./app/training.txt") as fname:
         lines = fname.readlines()
         for line in lines:
             data.append(line.strip('\n'))
@@ -186,9 +186,9 @@ def get_133t_transformation(list_baseword):
 def main(password):
     #Connection
     start = timeit.default_timer()
-    con = create_connection(r'./databases/test.db')
+    con = create_connection(r'./app/databases/test.db')
     cur = con.cursor() 
-    name_file = "generated_pass.txt"
+    name_file = "./app/generated_pass.txt"
     # Hash section - check if a txt from passwords has been changed. If it has been changed, it's necessary to find again L1 and L2 values. 
     
     create_table_hash(con)
@@ -251,7 +251,7 @@ def main(password):
         print("insertions created")
 
     # Update section
-    new_list = get_list("passwords.txt")
+    new_list = get_list("./app/passwords.txt")
     lg_new_list= len(new_list)
 
 
@@ -261,14 +261,14 @@ def main(password):
         total = get_record(cur,"SELECT * FROM length_table ORDER BY ROWID DESC LIMIT 1")
         print(total)
         #Update the dataset
-        update.update_data("passwords.txt",total)
+        update.update_data("./app/passwords.txt",total)
 
         #Update size 
         new_total = total + lg_new_list
         cur.execute("INSERT OR IGNORE INTO length_table (length_t) VALUES (?)",(new_total,))
         con.commit()
         # Delete all elements from file with new passwords
-        file = open('passwords.txt','w')
+        file = open('./app/passwords.txt','w')
         file.close()
         
 

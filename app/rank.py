@@ -1,4 +1,4 @@
-from Esrank import main2
+from app.Esrank import main2
 
 def keyBoard(word):
     for w in word:

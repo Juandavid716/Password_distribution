@@ -1,5 +1,5 @@
 from flask_restful import Resource
-from main import main
+from app.main import main
 
 
 class Password(Resource):

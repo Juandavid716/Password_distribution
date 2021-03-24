@@ -1,5 +1,5 @@
-from database import create_connection
-import main
+from app.database import create_connection
+import app.main
 from collections import Counter
 
 
